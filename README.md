@@ -25,7 +25,7 @@ Before running the app, ensure you have the following tools and dependencies ins
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/your-username/qr-bar-generator.git
+   git clone https://github.com/camillemaulion05/qr-bar-generator
    cd qr-bar-generator
    ```
 
