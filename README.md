@@ -182,22 +182,27 @@ Here is an example of how the QR code and Barcode generation, file upload, and r
     - **data** (`str`): The data to encode in the QR code or barcode.
 
     - **code_type** (`str`): The type of code to generate. Can be one of the following:
-    - `'qr'`: To generate a QR code.
-    - `'barcode'`: To generate a barcode.
 
-    - **barcode_type** (`str`): The type of barcode to generate. This argument is relevant when `code_type` is set to `'barcode'`. Valid options are:
-    - `'code128'`
-    - `'ean13'`
-    - `'upc'`
-    - `'code39'`
-    - `'itf'`
-    - `'codabar'`
+      - `'qr'`: To generate a QR code.
+      - `'barcode'`: To generate a barcode.
 
-    - **error_correction** (`str`): The error correction level for the QR code. This argument is relevant when `code_type` is set to `'qr'`. Valid options are:
-    - `'L'`: 7% of error correction.
-    - `'M'`: 15% of error correction.
-    - `'Q'`: 25% of error correction.
-    - `'H'`: 30% of error correction.
+    - **barcode_type** (`str`): The type of barcode to generate. This argument is relevant when `code_type` is set to `'barcode'`.
+
+      - Valid options are:
+        - `'code128'`
+        - `'ean13'`
+        - `'upc'`
+        - `'code39'`
+        - `'itf'`
+        - `'codabar'`
+
+    - **error_correction** (`str`): The error correction level for the QR code. This argument is relevant when `code_type` is set to `'qr'`.
+
+      - Valid options are:
+        - `'L'`: 7% of error correction.
+        - `'M'`: 15% of error correction.
+        - `'Q'`: 25% of error correction.
+        - `'H'`: 30% of error correction.
 
     - **version** (`int`): The version of the QR code. This argument is only relevant when `code_type` is set to `'qr'`. Valid values range from 1 to 40, where higher values represent more complex QR codes.
 
