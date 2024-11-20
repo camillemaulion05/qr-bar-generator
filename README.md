@@ -1,7 +1,13 @@
 # QR and Barcode Generator API Integration
 
-This project allows you to generate QR codes and various types of barcodes, upload them as images, and send them via a PUT API request to an external server.
-The app uses environment variables to store API credentials and other configuration settings, allowing for a more flexible and secure deployment.
+This project provides functionality for generating QR codes and various types of barcodes, saving them as image files, uploading them to an API using form data, and updating records in a table with the uploaded file's information.
+
+## Features:
+
+1. **QR Code Generation**: Generate QR codes with customizable error correction levels and versions.
+2. **Barcode Generation**: Generate barcodes of various types such as Code128, EAN13, UPC, Code39, ITF, and Codabar.
+3. **File Upload to API**: Upload generated files (QR codes or barcodes) to a specified API endpoint, attaching the file to a record.
+4. **Record Update**: Update the record in a table with the URL of the uploaded file and a response message.
 
 ## Prerequisites
 
@@ -67,9 +73,10 @@ Before running the app, ensure you have the following tools and dependencies ins
    ```
 
    Note:
-   The ATTACHMENT_FIELD_NAME should correspond to a field in your Caspio table that is specifically set to the Attachment data type. This is necessary to ensure that files can be uploaded to the correct field.
 
-   The FILE_FIELD_NAME should correspond to a field in your Caspio table that is specifically set to the File data type. This is necessary to ensure that files can be uploaded to the correct field.
+   The ATTACHMENT_FIELD_NAME should correspond to a field in your Caspio table that is specifically set to the **Attachment** data type. This is necessary to ensure that files can be uploaded to the correct field.
+
+   The FILE_FIELD_NAME should correspond to a field in your Caspio table that is specifically set to the **File** data type. This is necessary to ensure that files can be uploaded to the correct field.
 
    Make sure to replace the placeholder values (your_account_id, your_table_name_here, your_attachment_field_name_here, your_file_field_name_here, your_response_field_name_here, your_record_primary_key_id_here, and your_access_token_here) with your actual Integration URL, table name, attachment field, file field, response field, record ID, and Access Token.
 
@@ -84,7 +91,8 @@ Before running the app, ensure you have the following tools and dependencies ins
    The script will:
 
    - Generate a QR code (or barcode, based on your input).
-   - Send the generated file as part of a PUT request to the specified API endpoint.
+   - Upload the generated image file via a POST request to the specified API endpoint.
+   - Once the file is uploaded, the record will be updated via a PUT request with the URL of the uploaded file and a response message.
 
 ## How It Works:
 
@@ -105,7 +113,11 @@ The app supports multiple types of barcodes including:
 
 ### 3. **File Upload**:
 
-After generating the QR code or barcode, the image file is uploaded to the API using a PUT request with the file as form data. The `requests` library is used for making the API call, and the `python-dotenv` library loads environment variables securely.
+After generating the QR code or barcode, the image file is uploaded to the API using a **POST** request with the file as form data. The `requests` library is used for making the API call, and the `python-dotenv` library loads environment variables securely.
+
+### 4. **Record Update**:
+
+Once the file is uploaded successfully, a **PUT** request is made to update the record in the table with the URL of the uploaded file and a response message. This allows the record to be updated with the new file's data.
 
 ### 4. **Environment Variables**:
 
@@ -119,11 +131,11 @@ The script uses the `.env` file to store configuration values like:
 - Record Primary Key (`RECORD_PK_ID`)
 - API Access Token (`ACCESS_TOKEN`)
 
-This approach makes it easy to securely store Token and other sensitive information.
+This approach makes it easy to securely store sensitive information, such as the API Access Token.
 
 ## Example Usage:
 
-Here is an example of how the QR code generation and file upload work:
+Here is an example of how the QR code generation, file upload, and record update work:
 
 1. **Generate a QR code** with custom error correction and version:
 
@@ -131,22 +143,16 @@ Here is an example of how the QR code generation and file upload work:
    qr_stream = generate_code("https://example.com", code_type="qr", error_correction="H", version=10)
    ```
 
-2. **Send the generated QR code** to the API:
+2. **Upload the generated QR code** to the API via a POST request:
 
    ```python
-   send_file_to_api(qr_stream, BASE_URL, TABLE_NAME, ATTACHMENT_FIELD_NAME, RECORD_PK_ID, ACCESS_TOKEN)
+   qr_file_url = upload_file_to_api(qr_stream, BASE_URL, ACCESS_TOKEN)
    ```
 
-3. **Generate a Code128 barcode**:
+3. **Update the record** with the uploaded QR code file URL via a PUT request:
 
    ```python
-   barcode_stream = generate_code("123456789012", code_type="barcode", barcode_type="code128")
-   ```
-
-4. **Send the generated barcode** to the API:
-
-   ```python
-   send_file_to_api(barcode_stream, BASE_URL, TABLE_NAME, ATTACHMENT_FIELD_NAME, RECORD_PK_ID, ACCESS_TOKEN)
+   update_record(BASE_URL, TABLE_NAME, FILE_FIELD_NAME, RESPONSE_FIELD_NAME, RECORD_PK_ID, ACCESS_TOKEN, qr_file_url)
    ```
 
 ### Note:
