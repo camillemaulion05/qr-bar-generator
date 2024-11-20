@@ -2,7 +2,7 @@ import os
 import io
 import qrcode
 import requests
-from barcode import Code128, EAN13, UPCA, Code39, ITF, codabar  # Use lowercase 'codabar'
+from barcode import Code128, EAN13, UPCA, Code39, ITF, codabar 
 from barcode.writer import ImageWriter
 from PIL import Image
 from dotenv import load_dotenv
@@ -72,7 +72,7 @@ def generate_code(data, code_type="qr", barcode_type="code128", error_correction
                 raise ValueError("ITF barcode requires an even number of digits.")
             barcode = ITF(data, writer=ImageWriter())
         elif barcode_type.lower() == "codabar":
-            barcode = codabar(data, writer=ImageWriter())  # Corrected codabar (lowercase)
+            barcode = codabar(data, writer=ImageWriter()) 
         else:
             raise ValueError(f"Invalid barcode type '{barcode_type}'. Supported types are: 'code128', 'ean13', 'upc', 'code39', 'itf', 'codabar'.")
         
@@ -119,14 +119,7 @@ def send_file_to_api(file_stream, base_url, table_name, attachment_field_name, r
 
     # Handle the response
     if response.status_code == 200:
-        try:
-            # Try parsing the JSON response if it's a valid JSON response
-            response_data = response.json()
-            print(f"File uploaded successfully: {response_data}")
-        except requests.exceptions.JSONDecodeError:
-            # Handle the case where the response is not valid JSON
-            print("Response is not JSON. Here is the raw response:")
-            print(response.text)
+        print(f"File uploaded successfully")
     else:
         print(f"Failed to upload file. Status code: {response.status_code}")
 
