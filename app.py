@@ -2,6 +2,7 @@ import os
 import io
 import qrcode
 import requests
+import time
 from barcode import Code128, EAN13, UPCA, Code39, ITF, codabar 
 from barcode.writer import ImageWriter
 from PIL import Image
@@ -14,6 +15,8 @@ load_dotenv()
 BASE_URL = os.getenv('BASE_URL')
 TABLE_NAME = os.getenv('TABLE_NAME')
 ATTACHMENT_FIELD_NAME = os.getenv('ATTACHMENT_FIELD_NAME')
+FILE_FIELD_NAME = os.getenv('FILE_FIELD_NAME')
+RESPONSE_FIELD_NAME = os.getenv('RESPONSE_FIELD_NAME')
 RECORD_PK_ID = os.getenv('RECORD_PK_ID')
 ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
 
@@ -101,8 +104,10 @@ def send_file_to_api(file_stream, base_url, table_name, attachment_field_name, r
     url = f"{base_url}/v2/tables/{table_name}/attachments/{attachment_field_name}/{record_pk_id}"
 
     # Prepare the file as part of form data
+    timestamp = int(time.time())  # Current timestamp in seconds
+    filename = f"image-{timestamp}.png"
     files = {
-        'file': ('image.png', file_stream, 'image/png')  # 'file' is the form field name expected by the API
+        'file': (filename, file_stream, 'image/png')  # 'file' is the form field name expected by the API
     }
 
     # Set the authorization header with the API key
@@ -124,18 +129,117 @@ def send_file_to_api(file_stream, base_url, table_name, attachment_field_name, r
         print(f"Failed to upload file. Status code: {response.status_code}")
 
 
+# Function to upload the generated file via POST method to the /files endpoint
+def upload_file_to_api(file_stream, base_url, access_token):
+    """
+    Uploads the generated file (as a byte stream) via a POST request to the API.
+
+    Args:
+        file_stream (BytesIO): The file as a byte stream to upload.
+        base_url (str): The base URL for the API endpoint.
+        access_token (str): The API token for authorization.
+    
+    Returns:
+        str: The file URL or ID returned by the API, or None if upload fails.
+    """
+    url = f"{base_url}/v2/files?externalKey="
+    timestamp = int(time.time())  # Current timestamp in seconds
+    filename = f"image-{timestamp}.png"
+
+    # Prepare the file as part of form data
+    files = {
+        'file': (filename, file_stream, 'image/png')  # 'file' is the form field name expected by the API
+    }
+
+    # Set the authorization header with the API key
+    headers = {
+        "Authorization": f"Bearer {access_token}"  # Authorization header
+    }
+
+    # POST request to upload the file
+    response = requests.post(url, files=files, headers=headers)
+
+    if response.status_code == 201:
+        # Extract the file name from the response
+        response_data = response.json()
+        file_name = response_data["Result"][0].get("Name", "")
+        print(f"File uploaded successfully. File Name: {file_name}")
+        return "/" + file_name
+    else:
+        print(f"Failed to upload file. Status code: {response.status_code}")
+        print(f"Response Content: {response.text}")
+        return None
+
+# Function to update the table record via PUT method
+def update_record(base_url, table_name, file_field_name, response_field_name, record_pk_id, access_token, file_url):
+    """
+    Updates a record in the table with the uploaded file URL.
+
+    Args:
+        base_url (str): The base URL for the API endpoint.
+        table_name (str): The name of the table to update.
+        record_pk_id (str): The primary key ID of the record to update.
+        access_token (str): The API key for authentication.
+        file_url (str): The file URL or ID to update the record with.
+    """
+    url = f"{base_url}/v2/tables/{table_name}/records?response=json&q.where=PK_ID={record_pk_id}"
+
+    if file_url:
+        response = "File uploaded successfully."
+    else: 
+        response = "Failed to upload file."
+
+
+    # Create the body for the PUT request (raw JSON)
+    body = {
+        file_field_name: file_url,  # Assuming the field name for the attachment is passed in the environment variable
+        response_field_name: response
+    }
+
+    # Set the authorization header with the API key
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"  # Specify that the body is JSON
+    }
+
+    # PUT request to update the record
+    response = requests.put(url, json=body, headers=headers)
+
+    if response.status_code == 200:
+        response_data = response.json()
+        records_affected = response_data.get("RecordsAffected", 0)
+
+        if records_affected > 0:
+            print(f"Record with PK_ID {record_pk_id} updated successfully.")
+            return "Success: Record updated."
+        else:
+            print(f"No records were affected. Please check the input data.")
+            return "Error: No records were updated."
+    else:
+        print(f"Failed to update record. Status code: {response.status_code}")
+        print(f"Response Content: {response.text}")
+        return f"Error: Failed to update record. Status code: {response.status_code}"
+
+
 # Example Usage:
 
 # Generate a QR code with custom error correction and version
 qr_stream = generate_code("https://example.com", code_type="qr", error_correction="H", version=10)
-print("QR Code generated in memory.")
+if qr_stream:
+    print("QR Code generated in memory.")
 
 # Generate a Code128 barcode
 # barcode_stream = generate_code("123456789012", code_type="barcode", barcode_type="code128")
 # print("Barcode generated in memory.")
 
 # Send the QR code to the API using PUT method
-send_file_to_api(qr_stream, BASE_URL, TABLE_NAME, ATTACHMENT_FIELD_NAME, RECORD_PK_ID, ACCESS_TOKEN)
+# send_file_to_api(qr_stream, BASE_URL, TABLE_NAME, ATTACHMENT_FIELD_NAME, RECORD_PK_ID, ACCESS_TOKEN)
 
 # Send the Barcode to the API using PUT method
 # send_file_to_api(barcode_stream, BASE_URL, TABLE_NAME, ATTACHMENT_FIELD_NAME, RECORD_PK_ID, ACCESS_TOKEN)
+
+# Upload the QR code to the API
+    file_name = upload_file_to_api(qr_stream, BASE_URL, ACCESS_TOKEN)
+
+# If file upload is successful, update the record in the table with the file name
+    update_record(BASE_URL, TABLE_NAME, FILE_FIELD_NAME, RESPONSE_FIELD_NAME, RECORD_PK_ID, ACCESS_TOKEN, file_name)

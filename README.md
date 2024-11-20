@@ -60,6 +60,8 @@ Before running the app, ensure you have the following tools and dependencies ins
     BASE_URL=https://your_integration_url/rest  # Replace with your actual base URL
     TABLE_NAME=your_table_name_here  # Replace with the target table name
     ATTACHMENT_FIELD_NAME=your_attachment_field_name_here  # Replace with the target attachment field name
+    FILE_FIELD_NAME=your_file_field_name_here  # Replace with the target file field name
+    RESPONSE_FIELD_NAME=your_response_field_name_here  # Replace with the target response field name
     RECORD_PK_ID=your_record_primary_key_id_here  # Replace with the target record primary key ID
     ACCESS_TOKEN=your_access_token_here  # Replace with your actual API Access Token
    ```
@@ -67,7 +69,9 @@ Before running the app, ensure you have the following tools and dependencies ins
    Note:
    The ATTACHMENT_FIELD_NAME should correspond to a field in your Caspio table that is specifically set to the Attachment data type. This is necessary to ensure that files can be uploaded to the correct field.
 
-   Make sure to replace the placeholder values (your_account_id, your_table_name_here, your_attachment_field_name_here, your_record_primary_key_id_here, and your_access_token_here) with your actual Integration URL, table name, attachment field, record ID, and Access Token.
+   The FILE_FIELD_NAME should correspond to a field in your Caspio table that is specifically set to the File data type. This is necessary to ensure that files can be uploaded to the correct field.
+
+   Make sure to replace the placeholder values (your_account_id, your_table_name_here, your_attachment_field_name_here, your_file_field_name_here, your_response_field_name_here, your_record_primary_key_id_here, and your_access_token_here) with your actual Integration URL, table name, attachment field, file field, response field, record ID, and Access Token.
 
 5. **Run the Script:**
 
@@ -110,6 +114,8 @@ The script uses the `.env` file to store configuration values like:
 - Base URL (`BASE_URL`)
 - Table Name (`TABLE_NAME`)
 - Attachment Field Name (`ATTACHMENT_FIELD_NAME`)
+- File Field Name (`FILE_FIELD_NAME`)
+- Response Field Name (`RESPONSE_FIELD_NAME`)
 - Record Primary Key (`RECORD_PK_ID`)
 - API Access Token (`ACCESS_TOKEN`)
 
@@ -146,7 +152,7 @@ Here is an example of how the QR code generation and file upload work:
 ### Note:
 
 - The `send_file_to_api` function uses a PUT request to upload the file as form data.
-- The `BASE_URL`, `TABLE_NAME`, `ATTACHMENT_FIELD_NAME`, `RECORD_PK_ID`, and `ACCESS_TOKEN` values are read from environment variables.
+- The `BASE_URL`, `TABLE_NAME`, `ATTACHMENT_FIELD_NAME`, `FILE_FIELD_NAME`, `RESPONSE_FIELD_NAME`, `RECORD_PK_ID`, and `ACCESS_TOKEN` values are read from environment variables.
 
 ## Troubleshooting:
 
