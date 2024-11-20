@@ -74,11 +74,11 @@ Before running the app, ensure you have the following tools and dependencies ins
 
    Note:
 
-   The ATTACHMENT_FIELD_NAME should correspond to a field in your Caspio table that is specifically set to the **Attachment** data type. This is necessary to ensure that files can be uploaded to the correct field.
+   - The `ATTACHMENT_FIELD_NAME` should correspond to a field in your Caspio table that is specifically set to the **Attachment** data type. This is necessary to ensure that files can be uploaded to the correct field.
 
-   The FILE_FIELD_NAME should correspond to a field in your Caspio table that is specifically set to the **File** data type. This is necessary to ensure that files can be uploaded to the correct field.
+   - The `FILE_FIELD_NAME` should correspond to a field in your Caspio table that is specifically set to the **File** data type. This is necessary to ensure that files can be uploaded to the correct field.
 
-   Make sure to replace the placeholder values (your_account_id, your_table_name_here, your_attachment_field_name_here, your_file_field_name_here, your_response_field_name_here, your_record_primary_key_id_here, and your_access_token_here) with your actual Integration URL, table name, attachment field, file field, response field, record ID, and Access Token.
+   Make sure to replace the placeholder values (such as `your_account_id`, `your_table_name_here`, etc.) with your actual Integration URL, table name, attachment field, file field, response field, record ID, and Access Token.
 
 5. **Run the Script:**
 
@@ -91,8 +91,8 @@ Before running the app, ensure you have the following tools and dependencies ins
    The script will:
 
    - Generate a QR code (or barcode, based on your input).
-   - Upload the generated image file via a POST request to the specified API endpoint.
-   - Once the file is uploaded, the record will be updated via a PUT request with the URL of the uploaded file and a response message.
+   - Upload the generated image file via a **POST** request to the specified API endpoint.
+   - Once the file is uploaded, the record will be updated via a **PUT** request with the URL of the uploaded file and a response message.
 
 ## How It Works:
 
@@ -135,7 +135,7 @@ This approach makes it easy to securely store sensitive information, such as the
 
 ## Example Usage:
 
-Here is an example of how the QR code generation, file upload, and record update work:
+Here is an example of how the QR code and Barcode generation, file upload, and record update work:
 
 1. **Generate a QR code** with custom error correction and version:
 
@@ -143,21 +143,73 @@ Here is an example of how the QR code generation, file upload, and record update
    qr_stream = generate_code("https://example.com", code_type="qr", error_correction="H", version=10)
    ```
 
-2. **Upload the generated QR code** to the API via a POST request:
+2. **Upload the generated QR code** to the API via a **POST** request:
 
    ```python
    qr_file_url = upload_file_to_api(qr_stream, BASE_URL, ACCESS_TOKEN)
    ```
 
-3. **Update the record** with the uploaded QR code file URL via a PUT request:
+3. **Update the record** with the uploaded QR code file URL via a **PUT** request:
 
    ```python
    update_record(BASE_URL, TABLE_NAME, FILE_FIELD_NAME, RESPONSE_FIELD_NAME, RECORD_PK_ID, ACCESS_TOKEN, qr_file_url)
    ```
 
+4. **Generate a Code128 barcode**:
+
+   ```python
+   barcode_stream = generate_code("123456789012", code_type="barcode", barcode_type="code128")
+   ```
+
+5. **Upload the generated barcode** to the API via a **POST** request:
+
+   ```python
+   barcode_file_url = upload_file_to_api(barcode_stream, BASE_URL, ACCESS_TOKEN)
+   ```
+
+6. **Update the record** with the uploaded barcode file URL via a **PUT** request:
+
+   ```python
+   update_record(BASE_URL, TABLE_NAME, FILE_FIELD_NAME, RESPONSE_FIELD_NAME, RECORD_PK_ID, ACCESS_TOKEN, barcode_file_url)
+   ```
+
 ### Note:
 
-- The `send_file_to_api` function uses a PUT request to upload the file as form data.
+- The `generate_code` function generates either a QR code or a barcode and returns it as a byte stream.
+
+  - Arguments:
+
+    - **data** (`str`): The data to encode in the QR code or barcode.
+
+    - **code_type** (`str`): The type of code to generate. Can be one of the following:
+    - `'qr'`: To generate a QR code.
+    - `'barcode'`: To generate a barcode.
+
+    - **barcode_type** (`str`): The type of barcode to generate. This argument is relevant when `code_type` is set to `'barcode'`. Valid options are:
+    - `'code128'`
+    - `'ean13'`
+    - `'upc'`
+    - `'code39'`
+    - `'itf'`
+    - `'codabar'`
+
+    - **error_correction** (`str`): The error correction level for the QR code. This argument is relevant when `code_type` is set to `'qr'`. Valid options are:
+    - `'L'`: 7% of error correction.
+    - `'M'`: 15% of error correction.
+    - `'Q'`: 25% of error correction.
+    - `'H'`: 30% of error correction.
+
+    - **version** (`int`): The version of the QR code. This argument is only relevant when `code_type` is set to `'qr'`. Valid values range from 1 to 40, where higher values represent more complex QR codes.
+
+    - **box_size** (`int`): The size of each box in the QR code. This controls how large each square element in the QR code appears. Default is 10.
+
+    - **border** (`int`): The border size (in boxes) for the QR code. Default is 4.
+
+  - Returns:
+    - **bytes**: The generated image as a byte stream, which can be saved to a file or uploaded directly to an API.
+
+- The `upload_file_to_api` function uses a **POST** request to upload the file (QR code or barcode) as form data and returns the file URL.
+- The `update_record` function uses a **PUT** request to update the record with the uploaded file URL and response message.
 - The `BASE_URL`, `TABLE_NAME`, `ATTACHMENT_FIELD_NAME`, `FILE_FIELD_NAME`, `RESPONSE_FIELD_NAME`, `RECORD_PK_ID`, and `ACCESS_TOKEN` values are read from environment variables.
 
 ## Troubleshooting:
