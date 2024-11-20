@@ -214,7 +214,27 @@ Here is an example of how the QR code and Barcode generation, file upload, and r
     - **bytes**: The generated image as a byte stream, which can be saved to a file or uploaded directly to an API.
 
 - The `upload_file_to_api` function uses a **POST** request to upload the file (QR code or barcode) as form data and returns the file URL.
+
+  - Arguments:
+    - **file_stream** (`BytesIO`): The file as a byte stream to upload.
+    - **base_url** (`str`): The base URL for the API endpoint where the file will be uploaded.
+    - **access_token** (`str`): The API token used for authorization to access the endpoint.
+  - Returns:
+    - **str**: The file URL or ID returned by the API, or `None` if the upload fails.
+
 - The `update_record` function uses a **PUT** request to update the record with the uploaded file URL and response message.
+
+  - Arguments:
+    - **base_url** (`str`): The base URL for the API endpoint where the record update will happen.
+    - **table_name** (`str`): The name of the table to update with the file URL.
+    - **file_field_name** (`str`): The name of the field where the uploaded file URL will be stored in the table.
+    - **response_field_name** (`str`): The name of the field to store the upload status message.
+    - **record_pk_id** (`str`): The primary key ID of the record to update.
+    - **access_token** (`str`): The API token used for authentication when updating the record.
+    - **file_url** (`str`): The URL or ID of the uploaded file that will be stored in the record.
+  - Returns:
+    - **str**: A success or error message based on whether the record was successfully updated.
+
 - The `BASE_URL`, `TABLE_NAME`, `ATTACHMENT_FIELD_NAME`, `FILE_FIELD_NAME`, `RESPONSE_FIELD_NAME`, `RECORD_PK_ID`, and `ACCESS_TOKEN` values are read from environment variables.
 
 ## Troubleshooting:
