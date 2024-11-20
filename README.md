@@ -57,14 +57,17 @@ Before running the app, ensure you have the following tools and dependencies ins
    Create a `.env` file in the root of the project directory and add the following configuration values:
 
    ```dotenv
-    BASE_URL=https://your_account_id.caspio.com/rest  # Replace with your actual base URL
+    BASE_URL=https://your_integration_url/rest  # Replace with your actual base URL
     TABLE_NAME=your_table_name_here  # Replace with the target table name
     ATTACHMENT_FIELD_NAME=your_attachment_field_name_here  # Replace with the target attachment field name
     RECORD_PK_ID=your_record_primary_key_id_here  # Replace with the target record primary key ID
     ACCESS_TOKEN=your_access_token_here  # Replace with your actual API Access Token
    ```
 
-   Make sure to replace the placeholder values with your actual API URL, table name, attachment field, record ID, and access token.
+   Note:
+   The ATTACHMENT_FIELD_NAME should correspond to a field in your Caspio table that is specifically set to the Attachment data type. This is necessary to ensure that files can be uploaded to the correct field.
+
+   Make sure to replace the placeholder values (your_account_id, your_table_name_here, your_attachment_field_name_here, your_record_primary_key_id_here, and your_access_token_here) with your actual Integration URL, table name, attachment field, record ID, and Access Token.
 
 5. **Run the Script:**
 
