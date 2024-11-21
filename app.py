@@ -3,7 +3,7 @@ import io
 import qrcode
 import requests
 import time
-from barcode import Code128, EAN13, UPCA, Code39, ITF, codabar 
+from barcode import Code128, EAN13, UPCA, Code39, ITF, ISBN10, ISBN13, get_barcode_class
 from barcode.writer import ImageWriter
 from PIL import Image
 from dotenv import load_dotenv
@@ -75,9 +75,21 @@ def generate_code(data, code_type="qr", barcode_type="code128", error_correction
                 raise ValueError("ITF barcode requires an even number of digits.")
             barcode = ITF(data, writer=ImageWriter())
         elif barcode_type.lower() == "codabar":
-            barcode = codabar(data, writer=ImageWriter()) 
+            if len(data) < 4:  # Codabar barcode should have a minimum of 4 digits
+                raise ValueError("Codabar barcode requires at least 4 digits.")
+            # Get the Codabar class dynamically
+            Codabar = get_barcode_class('codabar')
+            barcode = Codabar(data, writer=ImageWriter())
+        elif barcode_type.lower() == "isbn10":
+            if len(data) != 10:
+                raise ValueError("ISBN10 barcode requires exactly 10 digits.")
+            barcode = ISBN10(data, writer=ImageWriter())
+        elif barcode_type.lower() == "isbn13":
+            if len(data) != 13:
+                raise ValueError("ISBN13 barcode requires exactly 13 digits.")
+            barcode = ISBN13(data, writer=ImageWriter())
         else:
-            raise ValueError(f"Invalid barcode type '{barcode_type}'. Supported types are: 'code128', 'ean13', 'upc', 'code39', 'itf', 'codabar'.")
+            raise ValueError(f"Invalid barcode type '{barcode_type}'. Supported types are: 'code128', 'ean13', 'upc', 'code39', 'itf', 'codabar', 'isbn10', 'isbn13'.")
         
         # Save to a byte stream and return it
         byte_io = io.BytesIO()
@@ -87,7 +99,6 @@ def generate_code(data, code_type="qr", barcode_type="code128", error_correction
 
     else:
         raise ValueError(f"Invalid code type '{code_type}'. Supported types are: 'qr' and 'barcode'.")
-
 # Function to send the generated file via API request using PUT method (with form data)
 def send_file_to_api(file_stream, base_url, table_name, attachment_field_name, record_pk_id, access_token):
     """
@@ -223,23 +234,33 @@ def update_record(base_url, table_name, file_field_name, response_field_name, re
 
 # Example Usage:
 
-# Generate a QR code with custom error correction and version
-qr_stream = generate_code("https://example.com", code_type="qr", error_correction="H", version=10)
-if qr_stream:
-    print("QR Code generated in memory.")
+# Ask the user whether they want a QR code or a barcode
+code_type = input("Would you like to generate a 'QR' code or a 'Barcode'? ").strip().lower()
+    
+if code_type == "qr":
+    # Ask for content to encode in the QR code
+    content = input("Enter the content for the QR Code (e.g., URL): ").strip()
+    
+    qr_stream = generate_code(content, code_type="qr", error_correction="H", version=10)
+    if qr_stream:
+        print("QR Code generated in memory.")
+        # Upload the QR code to the API
+        file_name = upload_file_to_api(qr_stream, BASE_URL, ACCESS_TOKEN)
 
-# Generate a Code128 barcode
-# barcode_stream = generate_code("123456789012", code_type="barcode", barcode_type="code128")
-# print("Barcode generated in memory.")
+        # If file upload is successful, update the record in the table with the file name
+        update_record(BASE_URL, TABLE_NAME, FILE_FIELD_NAME, RESPONSE_FIELD_NAME, RECORD_PK_ID, ACCESS_TOKEN, file_name)
+elif code_type == "barcode":
+    # Ask for content to encode in the barcode
+    content = input("Enter the content for the Barcode: ").strip()
+    barcode_type = input("Enter the barcode type (e.g., 'ean13', 'upc', etc.): ").strip()
+    
+    barcode_stream = generate_code(content, code_type="barcode", barcode_type=barcode_type)
+    if barcode_stream:
+        print("Barcode generated in memory.")
+        # Upload the Barcode to the API
+        file_name = upload_file_to_api(barcode_stream, BASE_URL, ACCESS_TOKEN)
 
-# Send the QR code to the API using PUT method
-# send_file_to_api(qr_stream, BASE_URL, TABLE_NAME, ATTACHMENT_FIELD_NAME, RECORD_PK_ID, ACCESS_TOKEN)
-
-# Send the Barcode to the API using PUT method
-# send_file_to_api(barcode_stream, BASE_URL, TABLE_NAME, ATTACHMENT_FIELD_NAME, RECORD_PK_ID, ACCESS_TOKEN)
-
-# Upload the QR code to the API
-    file_name = upload_file_to_api(qr_stream, BASE_URL, ACCESS_TOKEN)
-
-# If file upload is successful, update the record in the table with the file name
-    update_record(BASE_URL, TABLE_NAME, FILE_FIELD_NAME, RESPONSE_FIELD_NAME, RECORD_PK_ID, ACCESS_TOKEN, file_name)
+        # If file upload is successful, update the record in the table with the file name
+        update_record(BASE_URL, TABLE_NAME, FILE_FIELD_NAME, RESPONSE_FIELD_NAME, RECORD_PK_ID, ACCESS_TOKEN, file_name)
+else:
+    print("Invalid input. Please choose either 'QR' or 'Barcode'.")
